@@ -10,6 +10,8 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@echo "Build directory cleaned." 
 
-debug:
-	sudo cat /sys/kernel/tracing/trace_pipe
+run:
+	@sudo $(BUILD_DIR)/app/AeBPF
 
+debug:
+	@sudo cat /sys/kernel/tracing/trace_pipe
