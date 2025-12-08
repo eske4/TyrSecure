@@ -1,8 +1,4 @@
 message(STATUS "======================================")
-message(STATUS "Fetching packages")
-message(STATUS "======================================")
-
-message(STATUS "======================================")
 message(STATUS " Checking required packages")
 message(STATUS "======================================")
 
@@ -15,10 +11,7 @@ else()
   message(
     FATAL_ERROR
       "\n❌ pkg-config not found.\n"
-      "It is required to locate system libraries.\n\n"
-      "Install it with:\n"
-      "  Ubuntu/Debian: sudo apt install pkg-config\n"
-      "  Fedora: sudo dnf install pkgconf-pkg-config\n"
+      "It is required to locate system libraries.\n\n" "Install it with:\n"
       "  Arch: sudo pacman -S pkgconf\n")
 endif()
 
