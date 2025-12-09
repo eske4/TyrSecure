@@ -44,13 +44,7 @@ int module_handler::LoadAndAttachAll() {
 void module_handler::DetachAndUnloadAll() {
   // Check if the unique_ptr holds a valid object before attempting cleanup.
   if (skel_obj) {
-    // The bpf__destroy function automatically handles detaching programs and
-    // freeing maps. The unique_ptr's custom deleter will run
-    // module_tracker__destroy() when the skel_obj is destroyed, but we can call
-    // reset() explicitly here for immediate and controlled cleanup.
-
-    // We explicitly destroy the object, which detaches everything.
-    module_tracker__destroy(skel_obj.release());
+    skel_obj.reset();
     std::cout << "eBPF programs detached and unloaded." << std::endl;
   }
 }
