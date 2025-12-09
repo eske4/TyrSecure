@@ -5,11 +5,13 @@
 int main() {
   std::cout << "--- Anti-Cheat Handler Test ---" << std::endl;
 
+  pid_t protected_pid = 37091;
+
   module_handler handler;
   ptrace_handler ptrace_handler;
 
   // 1. Load and Attach
-  if (handler.LoadAndAttachAll() != 0 || ptrace_handler.LoadAndAttachAll(37091) != 0) {
+  if (handler.LoadAndAttachAll() != 0 || ptrace_handler.LoadAndAttachAll(protected_pid) != 0) {
     std::cerr << "FATAL: Failed to load eBPF programs. Check dmesg/permissions."
               << std::endl;
     return 1;
