@@ -14,6 +14,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
+add_compile_options(
+  -Wall
+  -Wextra
+)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # auto complete for nvim
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")

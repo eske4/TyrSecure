@@ -3,10 +3,14 @@
 #include <iostream>
 #include "../shared.h"
 #include "string.h"
+#include <utility>
 
-int handle_event(void *ctx, void *data, size_t data_sz)
-{
-    memmove(ctx, data, data_sz);
+int handle_event(void *ctx, void *data, size_t data_sz) {
+    (void)data_sz; // mark as unused
+
+    auto* optional_data_p = static_cast<std::optional<struct ptrace_event>*>(ctx);
+    *optional_data_p = *static_cast<struct ptrace_event*>(data);
+    
     return 0;
 }
 
@@ -49,11 +53,11 @@ int ptrace_handler::LoadAndAttachAll(pid_t protected_pid)
     }
 
     run = true;
-    loop_thread = std::async([this]()
-                             {
-    while (this->run) {
-        ring_buffer__poll(this->rb.get(), 100);
-    } });
+    loop_thread = std::async([this]() {
+        while (this->run) {
+            ring_buffer__poll(this->rb.get(), 100);
+        }
+    });
 
     return 0;
 }
@@ -66,9 +70,9 @@ void ptrace_handler::DetachAndUnloadAll()
     std::cout << "ptrace eBPF program detached and unloaded." << std::endl;
 }
 
-const ptrace_event ptrace_handler::GetData()
+const std::optional<ptrace_event> ptrace_handler::GetData()
 {
-    return data;
+    return std::exchange(data, std::nullopt);
 }
 
 ptrace_handler::~ptrace_handler() { DetachAndUnloadAll(); }

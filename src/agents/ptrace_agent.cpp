@@ -3,16 +3,17 @@
 
 void ptrace_agent::print_ptrace() {
     auto data = this->handler.GetData();
-    std::cout << "ptrace called by " << data.caller_name
-            << " (pid " << data.caller
-            << "), attaching to proc " << data.target
+    if (!data.has_value()) return;
+    
+    std::cout << "ptrace called by " << data.value().caller_name
+            << " (pid " << data.value().caller
+            << "), attaching to proc " << data.value().target
             << std::endl;
 }
 
-ptrace_agent::ptrace_agent(/* args */)
+ptrace_agent::ptrace_agent(pid_t protected_pid)
 {
-    std::cout << "agent constructor" << std::endl;
-    this->handler.LoadAndAttachAll(808);
+    this->handler.LoadAndAttachAll(protected_pid);
 }
 
 ptrace_agent::~ptrace_agent()

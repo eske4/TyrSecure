@@ -3,6 +3,7 @@
 #include <memory>
 #include <future>
 #include "../../shared.h"
+#include <optional>
 
 class ptrace_handler {
 public:
@@ -13,7 +14,7 @@ public:
   /// @param protected_pid The pid of the game/process to protect
   int LoadAndAttachAll(pid_t protected_pid);
   void DetachAndUnloadAll();
-  const struct ptrace_event GetData();
+  const std::optional<struct ptrace_event> GetData();
 
 private:
   std::unique_ptr<struct ptrace, decltype(&ptrace__destroy)>
@@ -22,7 +23,7 @@ private:
   std::unique_ptr<struct ring_buffer, decltype(&ring_buffer__free)>
       rb{nullptr, ring_buffer__free};
 
+  bool run;
   std::future<void> loop_thread;
-  bool run = true;
-  struct ptrace_event data;
+  std::optional< ptrace_event> data;
 };
