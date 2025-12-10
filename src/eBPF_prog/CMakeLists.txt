@@ -8,7 +8,7 @@ file(MAKE_DIRECTORY ${SKEL_OUT_DIR})
 
 # vmlinux.h
 set(VMLINUX_H ${BPF_OUT}/vmlinux.h)
-set(EBPF_PROGRAMS module_tracker.bpf.c) # Add eBPF programs here
+set(EBPF_PROGRAMS module_tracker.bpf.c ptrace.bpf.c) # Add eBPF programs here
 
 add_custom_command(
   OUTPUT ${VMLINUX_H}

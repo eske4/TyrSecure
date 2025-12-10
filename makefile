@@ -1,6 +1,8 @@
 BUILD_DIR = build
 MAKEFLAGS += --no-print-directory
 
+.PHONY: build clean run debug
+
 build:
 	@mkdir -p $(BUILD_DIR)
 	@cd $(BUILD_DIR) && cmake .. && cmake --build .
