@@ -18,7 +18,8 @@ SEC("tp/syscalls/sys_enter_ptrace")
 int ptrace_entry(struct trace_event_raw_sys_enter *ctx)
 {
     pid_t caller = (pid_t)(bpf_get_current_pid_tgid() >> 32);
-    pid_t target = (pid_t)ctx->args[1];
+    pid_t target;
+    bpf_core_read(&target, sizeof(target), &ctx->args[1]);
 
     if (target != PROTECTED_PID || caller == PROTECTED_PID)
         return 0;
