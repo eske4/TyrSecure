@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.25.1)
 
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_CXX_COMPILER clang++)
+
 # Enforce Linux
 project(
   AeBPF
@@ -7,23 +10,16 @@ project(
   LANGUAGES C CXX
   DESCRIPTION "An anticheat focused on eBPF")
 
-# Enforce clang
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-set(CMAKE_C_STANDARD 23)
-set(CMAKE_C_STANDARD_REQUIRED True)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 add_compile_options(
   -Wall
   -Wextra
 )
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # auto complete for nvim
-
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
-
 include(Build)
+include(Compiler)
+include(BPF)
 include(Environment)
 include(CPM)
 include(Packages)
