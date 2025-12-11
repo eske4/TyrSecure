@@ -2,22 +2,19 @@
 set(BPF_OUT ${CMAKE_BINARY_DIR}/bpfs)
 set(SKEL_OUT_DIR ${CMAKE_BINARY_DIR}/skeletons)
 
-# Create output directories
-file(MAKE_DIRECTORY ${BPF_OUT})
-file(MAKE_DIRECTORY ${SKEL_OUT_DIR})
-
 # Headers and programs to generate/compile
 set(VMLINUX_H ${BPF_OUT}/vmlinux.h)
 set(EBPF_PROGRAMS module_tracker.bpf.c ptrace.bpf.c) # Add eBPF programs here
 
 get_target_property(DATATYPES_INCLUDES DataTypes INTERFACE_INCLUDE_DIRECTORIES)
 
+# Fetch header files from interface library
 set(DATATYPES_INCLUDE_FLAGS "")
 foreach(dir ${DATATYPES_INCLUDES})
   list(APPEND DATATYPES_INCLUDE_FLAGS "-I${dir}")
 endforeach()
 
-# eBPF programs
+# Compile eBPF programs and generate skeletons
 foreach(src ${EBPF_PROGRAMS})
   get_filename_component(name ${src} NAME_WE)
   set(OUT ${BPF_OUT}/${name}.o)
