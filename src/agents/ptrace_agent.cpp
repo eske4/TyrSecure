@@ -1,7 +1,7 @@
 #include "ptrace_agent.h"
 #include <cstdio>
 
-constexpr auto func = [](ptrace_event e)
+constexpr auto onEvent = [](ptrace_event e)
 { 
     printf("ptrace called by %s (PID %i), attaching to proc %i\n",
         e.caller_name,
@@ -10,7 +10,7 @@ constexpr auto func = [](ptrace_event e)
 };
 
 ptrace_agent::ptrace_agent(pid_t protected_pid)
-    : handler(func)
+    : handler(onEvent)
 {
     handler.LoadAndAttachAll(protected_pid);
 }
