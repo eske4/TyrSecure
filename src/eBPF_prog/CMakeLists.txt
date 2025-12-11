@@ -6,17 +6,16 @@ set(SKEL_OUT_DIR ${CMAKE_BINARY_DIR}/skeletons)
 file(MAKE_DIRECTORY ${BPF_OUT})
 file(MAKE_DIRECTORY ${SKEL_OUT_DIR})
 
-# vmlinux.h
+# Headers and programs to generate/compile
 set(VMLINUX_H ${BPF_OUT}/vmlinux.h)
 set(EBPF_PROGRAMS module_tracker.bpf.c ptrace.bpf.c) # Add eBPF programs here
 
-add_custom_command(
-  OUTPUT ${VMLINUX_H}
-  COMMAND bpftool btf dump file /sys/kernel/btf/vmlinux format c > ${VMLINUX_H}
-  WORKING_DIRECTORY ${BPF_OUT}
-  COMMENT "Generating vmlinux.h")
+get_target_property(DATATYPES_INCLUDES DataTypes INTERFACE_INCLUDE_DIRECTORIES)
 
-add_custom_target(vmlinux_btf ALL DEPENDS ${VMLINUX_H})
+set(DATATYPES_INCLUDE_FLAGS "")
+foreach(dir ${DATATYPES_INCLUDES})
+  list(APPEND DATATYPES_INCLUDE_FLAGS "-I${dir}")
+endforeach()
 
 # eBPF programs
 foreach(src ${EBPF_PROGRAMS})
@@ -28,9 +27,8 @@ foreach(src ${EBPF_PROGRAMS})
     OUTPUT ${OUT}
     COMMAND
       ${CLANG_EXECUTABLE} "-target" "bpf" "-O2" "-g"
-      "-D__TARGET_ARCH_${BPF_ARCH}" "-I${BPF_OUT}" "-c"
-      "${CMAKE_CURRENT_SOURCE_DIR}/${src}" "-o" "${OUT}"
-    DEPENDS ${src} vmlinux_btf
+      "-D__TARGET_ARCH_${BPF_ARCH}" "-I${BPF_OUT}" "${DATATYPES_INCLUDE_FLAGS}"
+      "-c" "${CMAKE_CURRENT_SOURCE_DIR}/${src}" "-o" "${OUT}"
     COMMENT "Compiling ${name}.bpf.o")
   # Generate skeleton header
   add_custom_command(

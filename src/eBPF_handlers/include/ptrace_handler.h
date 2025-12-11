@@ -1,8 +1,8 @@
 #pragma once
+#include "data_types.h"
 #include "ptrace.skel.h"
-#include <memory>
 #include <future>
-#include "../../shared.h"
+#include <memory>
 
 class ptrace_handler {
 public:
@@ -16,11 +16,11 @@ public:
   const struct ptrace_event GetData();
 
 private:
-  std::unique_ptr<struct ptrace, decltype(&ptrace__destroy)>
-      skel_obj{nullptr, ptrace__destroy};
+  std::unique_ptr<struct ptrace, decltype(&ptrace__destroy)> skel_obj{
+      nullptr, ptrace__destroy};
 
-  std::unique_ptr<struct ring_buffer, decltype(&ring_buffer__free)>
-      rb{nullptr, ring_buffer__free};
+  std::unique_ptr<struct ring_buffer, decltype(&ring_buffer__free)> rb{
+      nullptr, ring_buffer__free};
 
   std::future<void> loop_thread;
   bool run = true;
