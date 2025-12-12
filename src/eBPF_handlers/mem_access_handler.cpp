@@ -1,24 +1,24 @@
-#include "ptrace_handler.h"
+#include "mem_access_handler.h"
 #include "data_types.h"
 #include "string.h"
 #include <bpf/libbpf.h>
 #include <iostream>
 
 
-int ptrace_handler::ring_buffer_callback(void *ctx, void *data, size_t data_sz)
+int mem_access_handler::ring_buffer_callback(void *ctx, void *data, size_t data_sz)
 {
-    ptrace_handler *handler = static_cast<ptrace_handler *>(ctx);
-    ptrace_event e;
+    mem_access_handler *handler = static_cast<mem_access_handler *>(ctx);
+    mem_event e;
     memmove(&e, data, data_sz);
     handler->on_event(e);
 
     return 0;
 }
 
-int ptrace_handler::LoadAndAttachAll(pid_t protected_pid) {
+int mem_access_handler::LoadAndAttachAll(pid_t protected_pid) {
   int err = 0;
 
-  skel_obj.reset(ptrace__open());
+  skel_obj.reset(mem_access__open());
   if (!skel_obj) {
     std::cerr << "ERROR: Failed to open BPF skeleton object." << std::endl;
     return -1;
@@ -26,7 +26,7 @@ int ptrace_handler::LoadAndAttachAll(pid_t protected_pid) {
 
   skel_obj.get()->rodata->PROTECTED_PID = protected_pid;
 
-    err = ptrace__load(skel_obj.get());
+    err = mem_access__load(skel_obj.get());
     if (err)
     {
         std::cerr << "ERROR: Failed to load BPF programs into kernel: " << err
@@ -37,12 +37,12 @@ int ptrace_handler::LoadAndAttachAll(pid_t protected_pid) {
 
     auto buf = ring_buffer__new(
         bpf_map__fd(skel_obj.get()->maps.rb),
-        ptrace_handler::ring_buffer_callback,
+        mem_access_handler::ring_buffer_callback,
         this,
         nullptr);
     rb.reset(buf);
 
-    err = ptrace__attach(skel_obj.get());
+    err = mem_access__attach(skel_obj.get());
     if (err)
     {
         std::cerr << "ERROR: Failed to attach BPF programs to hook points: " << err
@@ -61,15 +61,15 @@ int ptrace_handler::LoadAndAttachAll(pid_t protected_pid) {
   return 0;
 }
 
-ptrace_handler::ptrace_handler(std::function<void(ptrace_event)> on_event) {
+mem_access_handler::mem_access_handler(std::function<void(mem_event)> on_event) {
     this->on_event = on_event;
 }
 
-void ptrace_handler::DetachAndUnloadAll() {
+void mem_access_handler::DetachAndUnloadAll() {
   skel_obj.reset();
   run = false;
   loop_thread.wait();
-  std::cout << "ptrace eBPF program detached and unloaded." << std::endl;
+  std::cout << "mem_access eBPF program detached and unloaded." << std::endl;
 }
 
-ptrace_handler::~ptrace_handler() { DetachAndUnloadAll(); }
+mem_access_handler::~mem_access_handler() { DetachAndUnloadAll(); }
