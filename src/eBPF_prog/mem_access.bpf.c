@@ -143,6 +143,10 @@ int BPF_PROG(check_proc_access, struct file *file)
     goto cleanup; // only partial match
   }
 
+  // TODO:
+  // Needs more filtering to always allow access to for example proc/pid/status
+  // We should only block access to "mem" and "maps" (maybe more, idk yet) 
+
   e->caller = current_pid;
   bpf_get_current_comm(e->caller_name, sizeof(e->caller_name));
   e->type = OPEN;
@@ -150,7 +154,7 @@ int BPF_PROG(check_proc_access, struct file *file)
 
   bpf_printk("procfs file opened: %s by %s\n", e->filename, e->caller_name);
   bpf_ringbuf_submit(e, 0);
-  return 0;
+  return 0; // return 1 to deny access when filtering is done
 
 cleanup:
   bpf_ringbuf_discard(e, 0);
