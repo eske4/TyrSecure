@@ -6,7 +6,7 @@
 #define KMOD_NAME_LEN 64
 
 enum module_event_state : uint32_t { LOADED = 1, UNLOADED = 2 };
-enum mem_event_type {
+enum mem_event_type : uint32_t {
   PTRACE = 0,
   OPEN = 1,
   WRITE = 2,
