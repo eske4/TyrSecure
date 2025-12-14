@@ -75,9 +75,6 @@ int handle_process_vm_rw(pid_t pid, bool is_write)
   return 0;
 }
 
-
-
-
 SEC("tp/syscalls/sys_enter_process_vm_readv")
 int trace_readv(struct trace_event_raw_sys_enter *ctx)
 {
@@ -142,6 +139,10 @@ int BPF_PROG(check_proc_access, struct file *file)
   if (len <= 0 || len > PID_S_MAX_LEN)
   {
     goto allow_access; // should never happen, but we need to check because ebpf verifier
+  }
+  if (filename_ptr[len] != '/')
+  {
+    goto allow_access; // not same len
   }
   char temp = filename_ptr[len];
   filename_ptr[len] = '\0';
