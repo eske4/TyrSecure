@@ -131,7 +131,7 @@ int BPF_PROG(check_proc_access, struct file *file)
   }
 
   // This next section is stupid but bpf_strncmp can only be used
-  // with a read-only string as 3rd parameter.
+  // with a static read-only string as 3rd parameter.
   // Therefore I temporarily insert a '\0' while using bpf_strcmp to
   // get the same functionality as bpf_strncmp
 
