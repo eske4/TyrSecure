@@ -16,8 +16,8 @@ enum mem_event_type : uint32_t {
 
 struct mem_event {
   enum mem_event_type type;
-  int caller;
-  int target;
+  uint32_t caller;
+  uint32_t target;
   char caller_name[my_task_comm_len];
   char filename[filename_len];
 };
