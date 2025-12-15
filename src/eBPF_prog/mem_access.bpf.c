@@ -95,24 +95,21 @@ int BPF_PROG(check_proc_access, struct file *file)
   pid_t current_pid = bpf_get_current_pid_tgid() >> 32;
   if (current_pid == PROTECTED_PID)
     return 0;
+    
+    char buf[64];
+    
+    // get full resolved path
+    if (bpf_path_d_path(&file->f_path, buf, sizeof(buf)) < 0)
+    {
+      return 0;
+    }
+    
 
-  struct mem_event *e = bpf_ringbuf_reserve(&rb, sizeof(struct mem_event), 0);
-  if (!e)
-  {
-    return 0;
-  }
-
-  // get full resolved path
-  if (bpf_path_d_path(&file->f_path, e->filename, sizeof(e->filename)) < 0)
-  {
-    goto allow_access;
-  }
-
-  char *filename_ptr = e->filename;
+  char *filename_ptr = buf;
 
   if (bpf_strncmp(filename_ptr, 6, "/proc/"))
   {
-    goto allow_access; // not in /proc/
+    return 0; // not in /proc/
   }
   filename_ptr += 6;
 
@@ -123,11 +120,11 @@ int BPF_PROG(check_proc_access, struct file *file)
   ptr_protected = bpf_map_lookup_elem(&protected_pid_s_map, &key);
   if (!ptr_protected)
   {
-    goto allow_access;
+    return 0;
   }
   if (bpf_probe_read_kernel(protected_pid_s, PID_S_MAX_LEN, ptr_protected) < 0)
   {
-    goto allow_access;
+    return 0;
   }
 
   // This next section is stupid but bpf_strncmp can only be used
@@ -138,18 +135,18 @@ int BPF_PROG(check_proc_access, struct file *file)
   int len = bpf_strnlen(protected_pid_s, PID_S_MAX_LEN);
   if (len <= 0 || len > PID_S_MAX_LEN)
   {
-    goto allow_access; // should never happen, but we need to check because ebpf verifier
+    return 0; // should never happen, but we need to check because ebpf verifier
   }
   if (filename_ptr[len] != '/')
   {
-    goto allow_access; // not same len
+    return 0; // not same len
   }
   char temp = filename_ptr[len];
   filename_ptr[len] = '\0';
 
   if (bpf_strcmp(protected_pid_s, filename_ptr))
   {
-    goto allow_access; // no pid match
+    return 0; // no pid match
   }
   filename_ptr[len] = temp;
   filename_ptr += len;
@@ -160,6 +157,12 @@ int BPF_PROG(check_proc_access, struct file *file)
       !bpf_strncmp(filename_ptr, 5, "/maps") ||
       !bpf_strncmp(filename_ptr, 6, "/smaps"))
   {
+    struct mem_event *e = bpf_ringbuf_reserve(&rb, sizeof(struct mem_event), 0);
+    if (!e)
+    {
+      return 0;
+    }
+    bpf_core_read_str(e->filename, sizeof(buf), buf);
     e->caller = current_pid;
     bpf_get_current_comm(e->caller_name, sizeof(e->caller_name));
     e->type = OPEN;
@@ -170,7 +173,5 @@ int BPF_PROG(check_proc_access, struct file *file)
     return -EPERM;
   }
 
-allow_access:
-  bpf_ringbuf_discard(e, 0);
   return 0;
 }
