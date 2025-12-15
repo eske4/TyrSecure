@@ -55,7 +55,7 @@ mem_access_agent::mem_access_agent(pid_t protected_pid) : handler(on_event) {
   handler.LoadAndAttachAll(protected_pid);
 }
 
-mem_access_agent::~mem_access_agent() { handler.DetachAndUnloadAll(); }
+mem_access_agent::~mem_access_agent() { }
 
 void mem_access_agent::set_protected_pid(pid_t protected_pid) {
   this->protected_pid = protected_pid;
