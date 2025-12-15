@@ -176,7 +176,7 @@ int BPF_PROG(check_proc_access, struct file *file)
     {
       return 0;
     }
-    bpf_core_read_str(e->filename, sizeof(buf), buf);
+    bpf_path_d_path(&file->f_path, e->filename, MY_FILENAME_LEN);
     e->caller = current_pid;
     bpf_get_current_comm(e->caller_name, sizeof(e->caller_name));
     e->type = OPEN;
