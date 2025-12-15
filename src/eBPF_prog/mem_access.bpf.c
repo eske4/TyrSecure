@@ -110,15 +110,14 @@ int BPF_PROG(check_proc_access, struct file *file)
   pid_t current_pid = bpf_get_current_pid_tgid() >> 32;
   if (current_pid == PROTECTED_PID)
     return 0;
-    
-    char buf[64];
-    
-    // get full resolved path
-    if (bpf_path_d_path(&file->f_path, buf, sizeof(buf)) < 0)
-    {
-      return 0;
-    }
-    
+
+  char buf[64];
+
+  // get full resolved path
+  if (bpf_path_d_path(&file->f_path, buf, sizeof(buf)) < 0)
+  {
+    return 0;
+  }
 
   char *filename_ptr = buf;
 
