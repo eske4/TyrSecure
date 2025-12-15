@@ -3,7 +3,7 @@
 #include <cstdint>
 
 constexpr int my_task_comm_len = 16;
-constexpr int filename_len = 4096;
+constexpr int filename_len = 64;
 
 enum mem_event_type : uint32_t {
   PTRACE = 0,
