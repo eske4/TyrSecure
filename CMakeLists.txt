@@ -12,17 +12,14 @@ project(
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-add_compile_options(
-  -Wall
-  -Wextra
-)
+add_compile_options(-Wall -Wextra)
 
 include(Build)
+include(Environment)
+include(Packages)
 include(Compiler)
 include(BPF)
-include(Environment)
 include(CPM)
-include(Packages)
 
 add_subdirectory(src)
 add_subdirectory(app)
