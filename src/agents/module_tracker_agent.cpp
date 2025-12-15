@@ -7,7 +7,7 @@ module_tracker_agent::module_tracker_agent()
   handler.LoadAndAttachAll();
 }
 
-module_tracker_agent::~module_tracker_agent() { handler.DetachAndUnloadAll(); }
+module_tracker_agent::~module_tracker_agent() { }
 
 std::optional<module_event> module_tracker_agent::get_next_event() {
   std::lock_guard<std::mutex> lock(queue_mutex);

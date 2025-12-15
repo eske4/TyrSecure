@@ -10,7 +10,7 @@ mem_access_agent::mem_access_agent(pid_t protected_pid)
   handler.LoadAndAttachAll(protected_pid);
 }
 
-mem_access_agent::~mem_access_agent() { handler.DetachAndUnloadAll(); }
+mem_access_agent::~mem_access_agent() { }
 
 void mem_access_agent::on_event_cb(const mem_event &e) {
   std::lock_guard<std::mutex> lock(queue_mutex);
