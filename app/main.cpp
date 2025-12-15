@@ -9,6 +9,7 @@ bool stop = false;
 void siginthandler(int param)
 {
   stop = true;
+  std::cout << std::endl;
 }
 
 int main() {
