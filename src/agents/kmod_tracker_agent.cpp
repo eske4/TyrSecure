@@ -1,15 +1,15 @@
-#include "module_tracker_agent.h"
+#include "kmod_tracker_agent.h"
 #include <iostream>
 #include <string_view>
 
-module_tracker_agent::module_tracker_agent()
+kmod_tracker_agent::kmod_tracker_agent()
     : handler([this](const module_event &e) { on_event_cb(e); }) {
   handler.LoadAndAttachAll();
 }
 
-module_tracker_agent::~module_tracker_agent() { }
+kmod_tracker_agent::~kmod_tracker_agent() {}
 
-std::optional<module_event> module_tracker_agent::get_next_event() {
+std::optional<module_event> kmod_tracker_agent::get_next_event() {
   std::lock_guard<std::mutex> lock(queue_mutex);
   if (event_queue.empty())
     return std::nullopt;
@@ -18,12 +18,12 @@ std::optional<module_event> module_tracker_agent::get_next_event() {
   return e;
 }
 
-void module_tracker_agent::on_event_cb(const module_event &e) {
+void kmod_tracker_agent::on_event_cb(const module_event &e) {
   std::lock_guard<std::mutex> lock(queue_mutex);
   event_queue.push(e);
 }
 
-void module_tracker_agent::printEventData(const module_event &e) {
+void kmod_tracker_agent::printEventData(const module_event &e) {
   // Convert state enum to string
   std::string_view state_str = "";
 

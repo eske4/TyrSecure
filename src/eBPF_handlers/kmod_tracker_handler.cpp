@@ -1,4 +1,4 @@
-#include "module_tracker_handler.h"
+#include "kmod_tracker_handler.h"
 #include "string.h"
 #include <bpf/libbpf.h>
 #include <cerrno>
@@ -6,14 +6,14 @@
 #include <iostream>
 #include <thread>
 
-int module_tracker_handler::ring_buffer_callback(void *ctx, void *data,
-                                                 size_t data_sz) {
+int kmod_tracker_handler::ring_buffer_callback(void *ctx, void *data,
+                                               size_t data_sz) {
   if (data_sz != sizeof(module_event)) {
     std::cerr << "Size mitch match in event";
     return 1; // Return non-zero to indicate a processing error
   }
 
-  auto *handler = static_cast<module_tracker_handler *>(ctx);
+  auto *handler = static_cast<kmod_tracker_handler *>(ctx);
 
   module_event e;
   std::memcpy(&e, data, sizeof(e));
@@ -22,7 +22,7 @@ int module_tracker_handler::ring_buffer_callback(void *ctx, void *data,
   return 0;
 }
 
-int module_tracker_handler::LoadAndAttachAll() {
+int kmod_tracker_handler::LoadAndAttachAll() {
   if (!on_event) {
     std::cerr << "No on_event callback set\n";
     return -1;
@@ -30,13 +30,13 @@ int module_tracker_handler::LoadAndAttachAll() {
 
   int err = 0;
 
-  skel_obj.reset(module_tracker__open());
+  skel_obj.reset(kmod_tracker__open());
   if (!skel_obj) {
     std::cerr << "ERROR: Failed to open BPF skeleton object." << std::endl;
     return -1;
   }
 
-  err = module_tracker__load(skel_obj.get());
+  err = kmod_tracker__load(skel_obj.get());
   if (err) {
     std::cerr << "ERROR: Failed to load BPF programs into kernel: " << err
               << std::endl;
@@ -45,7 +45,7 @@ int module_tracker_handler::LoadAndAttachAll() {
   }
 
   rb.reset(ring_buffer__new(bpf_map__fd(skel_obj->maps.rb),
-                            module_tracker_handler::ring_buffer_callback, this,
+                            kmod_tracker_handler::ring_buffer_callback, this,
                             nullptr));
 
   if (!rb) {
@@ -54,7 +54,7 @@ int module_tracker_handler::LoadAndAttachAll() {
     return -1;
   }
 
-  err = module_tracker__attach(skel_obj.get());
+  err = kmod_tracker__attach(skel_obj.get());
   if (err) {
     std::cerr << "ERROR: Failed to attach BPF programs to hook points: " << err
               << std::endl;
@@ -81,11 +81,10 @@ int module_tracker_handler::LoadAndAttachAll() {
   return 0;
 }
 
-module_tracker_handler::module_tracker_handler(
-    std::function<void(module_event)> cb)
+kmod_tracker_handler::kmod_tracker_handler(std::function<void(module_event)> cb)
     : on_event(std::move(cb)) {}
 
-void module_tracker_handler::DetachAndUnloadAll() {
+void kmod_tracker_handler::DetachAndUnloadAll() {
 
   if (loop_thread.joinable()) {
     loop_thread.request_stop();
@@ -99,4 +98,4 @@ void module_tracker_handler::DetachAndUnloadAll() {
   std::cout << "module_tracker eBPF program detached and unloaded.\n";
 }
 
-module_tracker_handler::~module_tracker_handler() { DetachAndUnloadAll(); }
+kmod_tracker_handler::~kmod_tracker_handler() { DetachAndUnloadAll(); }

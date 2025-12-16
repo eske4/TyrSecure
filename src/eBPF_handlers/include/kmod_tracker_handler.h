@@ -1,16 +1,16 @@
 #pragma once
+#include "kmod_tracker.skel.h"
 #include "module_data.h"
-#include "module_tracker.skel.h"
 #include <functional>
 #include <memory>
 #include <thread>
 
-class module_tracker_handler {
+class kmod_tracker_handler {
 public:
   /// @param on_event A function that runs when new data arrives from eBPF
   /// programs
-  explicit module_tracker_handler(std::function<void(module_event)> on_event);
-  ~module_tracker_handler();
+  explicit kmod_tracker_handler(std::function<void(module_event)> on_event);
+  ~kmod_tracker_handler();
 
   /// @param protected_pid The pid of the game/process to protect
   int LoadAndAttachAll();
@@ -19,8 +19,8 @@ public:
 private:
   static int ring_buffer_callback(void *ctx, void *data, size_t data_sz);
 
-  std::unique_ptr<struct module_tracker, decltype(&module_tracker__destroy)>
-      skel_obj{nullptr, module_tracker__destroy};
+  std::unique_ptr<struct kmod_tracker, decltype(&kmod_tracker__destroy)>
+      skel_obj{nullptr, kmod_tracker__destroy};
 
   std::unique_ptr<struct ring_buffer, decltype(&ring_buffer__free)> rb{
       nullptr, ring_buffer__free};

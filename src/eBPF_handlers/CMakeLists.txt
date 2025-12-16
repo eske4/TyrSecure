@@ -1,4 +1,4 @@
-set(eBPF_HANDLER_SOURCES module_tracker_handler.cpp mem_access_handler.cpp)
+set(eBPF_HANDLER_SOURCES kmod_tracker_handler.cpp mem_access_handler.cpp)
 
 add_library(eBPF_Handlers ${eBPF_HANDLER_SOURCES})
 
@@ -8,4 +8,3 @@ target_include_directories(
   PUBLIC ${CMAKE_BINARY_DIR}/skeletons)
 
 target_link_libraries(eBPF_Handlers DataTypes)
-
