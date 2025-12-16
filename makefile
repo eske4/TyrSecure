@@ -13,7 +13,7 @@ clean:
 	@echo "Build directory cleaned." 
 
 run:
-	@sudo $(BUILD_DIR)/app/AeBPF
+	@sudo $(BUILD_DIR)/app/eBPFA
 
 debug:
 	@sudo cat /sys/kernel/tracing/trace_pipe
