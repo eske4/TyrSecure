@@ -1,7 +1,7 @@
 BUILD_DIR = build
 MAKEFLAGS += --no-print-directory
 
-.PHONY: build clean run debug
+.PHONY: build clean run debug test
 
 build:
 	@mkdir -p $(BUILD_DIR)
@@ -17,3 +17,9 @@ run:
 
 debug:
 	@sudo cat /sys/kernel/tracing/trace_pipe
+
+
+test: 
+	@sudo $(BUILD_DIR)/app/eBPFA $$(pidof native_client)
+
+

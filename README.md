@@ -66,3 +66,39 @@ make run
 
 The `make run` target attaches to a predefined PID (default: `792`).
 You can modify this value in the `Makefile`.
+
+
+## Test setup
+testing of eBPF program is done, using the open source game *AssaultCube*, and the cheating tools *ac_rhack* and *scanmem* (see next section for cheating methods).
+
+### Game installation guide:
+1. Download version v1.2.0.2 of *AssaultCube* from "https://github.com/assaultcube/AC/tags" (that is the version *ac_rhack* work with)
+2. Extract files and from root run `./assaultcube.sh` for instalation guide 
+
+### test steps
+1. start *AssaultCube*
+2. run `make build`if not done yet
+3. run `make test` -- if attackcube is running the eBPF program will attach its pid, else default pid 792
+
+
+## Cheat methods
+### Debugging utility *Scanmem*
+instalation using yay: `yay -S scanmem` 
+- Scanmem also have a GUI called *Gameconqueror*, can be installed using yay with command: `yay -S gameconqueror`
+
+**process** of memory manipulation using scanmem:
+1. start *AssaultCube* 
+2. run `ps -aux | grep assaultcube_v1.2` to find process id (pid) of game
+3. In new terminal run `sudo scanmem` 
+4. in scanmem use command `pid <game pid>`   
+5. enter `<value>` you want to track e.g. ammo count 
+6. in game change that value e.g. shoot the ammo 
+7. enter new `<value>` of what you wanted to track
+8. repeat until you have narrowed down matches in scanmem
+9. once match found value can be changed using `set <value>`
+
+
+### Cheat program *ac_rhack* 
+Uses cheat program for AssaultCube found at "https://github.com/scannells/ac_rhack"
+
+
