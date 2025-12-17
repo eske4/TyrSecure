@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
   kmod_tracker_agent module_agent = kmod_tracker_agent();
 
 
-  mem_agent.set_block_access(true);
+  mem_agent.set_block_access(false); //Set to true to make eBPF block access
 
   // 1. Load and Attach
   std::cout << "\n========================================================"<< std::endl;
