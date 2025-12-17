@@ -15,9 +15,13 @@ int main(int argc, char *argv[]) {
 
   pid_t protected_pid = (argc > 1) ? static_cast<pid_t>(std::stoi(argv[1]))
                                    : static_cast<pid_t>(792);
+                                   
 
   mem_access_agent mem_agent = mem_access_agent(protected_pid);
   kmod_tracker_agent module_agent = kmod_tracker_agent();
+
+
+  mem_agent.set_block_access(true);
 
   // 1. Load and Attach
   std::cout << "\n========================================================"<< std::endl;
@@ -40,7 +44,9 @@ int main(int argc, char *argv[]) {
 
     while (maybe_mem_agent) {
       const mem_event &e2 = *maybe_mem_agent;
-      mem_agent.printEventData(e2);
+      if (e2.type == WRITE || e2.type == READ || e2.type == VM_WRITE || e2.type == VM_READ || e2.type == OPEN || e2.type == PTRACE ) {
+        mem_agent.printEventData(e2);
+      }
       maybe_mem_agent = mem_agent.get_next_event();
     }
 

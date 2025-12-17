@@ -14,6 +14,7 @@ public:
   /// @param protected_pid The pid of the game/process to protect
   int LoadAndAttachAll(pid_t protected_pid);
   void DetachAndUnloadAll();
+  int set_block_access(bool block);
 
 private:
   static int ring_buffer_callback(void *ctx, void *data, size_t data_sz);

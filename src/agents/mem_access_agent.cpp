@@ -4,6 +4,12 @@
 
 std::string_view event_type_to_string(mem_event_type type);
 
+// test::block_access 
+void mem_access_agent::set_block_access(bool block) {
+    handler.set_block_access(block);
+}
+
+
 mem_access_agent::mem_access_agent(pid_t protected_pid)
     : handler([this](const mem_event &e) { on_event_cb(e); }) {
   this->protected_pid = protected_pid;

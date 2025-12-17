@@ -42,6 +42,15 @@ struct {
   __uint(max_entries, 256 * sizeof(struct mem_event));
 } rb SEC(".maps");
 
+// ebpf blocking acces toggle map
+struct {
+    __uint(type, BPF_MAP_TYPE_ARRAY);
+    __uint(key_size, sizeof(int));
+    __uint(value_size, sizeof(int));
+    __uint(max_entries, 1);
+} block_access_map SEC(".maps");
+
+
 SEC("tp/syscalls/sys_enter_ptrace")
 int ptrace_entry(struct trace_event_raw_sys_enter *ctx) {
   pid_t caller = (pid_t)(bpf_get_current_pid_tgid() >> 32);
@@ -60,8 +69,7 @@ int ptrace_entry(struct trace_event_raw_sys_enter *ctx) {
   e->target = target;
   bpf_get_current_comm(e->caller_name, sizeof(e->caller_name));
 
-  bpf_printk("ptrace called by %s(pid %i), attaching to process %i",
-             e->caller_name, e->caller, e->target);
+  bpf_printk("ptrace called by %s(pid %i), attaching to process %i", e->caller_name, e->caller, e->target);
 
   bpf_ringbuf_submit(e, 0);
 
@@ -82,8 +90,7 @@ int handle_process_vm_rw(pid_t pid, bool is_write)
   e->target = pid;
   bpf_get_current_comm(e->caller_name, sizeof(e->caller_name));
 
-  bpf_printk("process_vm_rw called by %s(pid %i), for process %i",
-             e->caller_name, e->caller, e->target);
+  bpf_printk("process_vm_rw called by %s(pid %i), for process %i", e->caller_name, e->caller, e->target);
 
   bpf_ringbuf_submit(e, 0);
 
@@ -165,6 +172,13 @@ int BPF_PROG(check_proc_access, struct file *file)
   filename_ptr[len] = temp;
   filename_ptr += len;
 
+
+  //check if ebpf should block access or just print events
+  int bkey = 0;
+  int *block_access = bpf_map_lookup_elem(&block_access_map, &bkey);
+  if (!block_access || !*block_access)
+    return 0; // dont block access
+
   // at this point, we know that the file is somewhere in the dir /proc/pid
   // we should only block access to "/mem" and "/maps" and "/smaps" (maybe more, idk yet)
   if (!bpf_strncmp(filename_ptr, 4, "/mem") ||
@@ -186,6 +200,6 @@ int BPF_PROG(check_proc_access, struct file *file)
     bpf_ringbuf_submit(e, 0);
     return -EPERM;
   }
-
+  
   return 0;
 }

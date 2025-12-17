@@ -22,6 +22,22 @@ int mem_access_handler::ring_buffer_callback(void *ctx, void *data,
   return 0;
 }
 
+// function to toggle access blæokc
+int mem_access_handler::set_block_access(bool block) {
+    if (!skel_obj) {
+        std::cerr << "ERROR: Failed to open BPF skeleton object." << std::endl;
+        return -1;
+    }
+    int bkey = 0;
+    int value = block ? 1 : 0;
+    struct bpf_map *map = skel_obj.get()->maps.block_access_map;
+    if (!map) {
+        return -1;
+    }
+
+    return bpf_map__update_elem(map, &bkey, sizeof(bkey), &value, sizeof(value), BPF_ANY);
+}
+
 int mem_access_handler::LoadAndAttachAll(pid_t protected_pid) {
   if (!on_event) {
     std::cerr << "No on_event callback set\n";
