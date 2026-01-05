@@ -39,8 +39,8 @@ Tested primarily on **Linux (Arch)**. Other modern Linux distributions with rece
 ## Building from Source
 
 ```sh
-git clone https://github.com/eske4/eBPF-Anticheat.git
-cd eBPF-Anticheat
+git clone https://github.com/eske4/TyrSecure.git
+cd TyrSecure
 make build
 ```
 
