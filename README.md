@@ -55,7 +55,7 @@ This builds both the eBPF programs and the userspace controller.
 Attach the anti-cheat to a target process by providing its PID:
 
 ```sh
-sudo ./eBPFA <target_pid>
+sudo ./TyrSecure <target_pid>
 ```
 
 Alternatively, use the default run target:
