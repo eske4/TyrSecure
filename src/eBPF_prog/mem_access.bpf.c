@@ -11,9 +11,9 @@ char LICENSE[] SEC("license") = "Dual BSD/GPL";
 #define PROC_SUPER_MAGIC 0x9fa0
 
 
-const pid_t PROTECTED_PID;
+volatile const pid_t PROTECTED_PID;
 
-enum mem_event_type {
+enum mem_event_type: uint32_t {
   PTRACE = 0,
   OPEN = 1,
   WRITE = 2,
@@ -21,12 +21,14 @@ enum mem_event_type {
   VM_WRITE = 4,
   VM_READ = 5,
   PROCFS = 6,
+  K_TASK_LOOKUP = 7,
+  K_VPID_LOOKUP = 8,
 };
 
 struct mem_event {
   enum mem_event_type type;
-  int caller;
-  int target;
+  uint32_t caller;
+  uint32_t target;
   char caller_name[MY_TASK_COMM_LEN];
   char filename[MY_FILENAME_LEN];
 };
@@ -155,9 +157,17 @@ int BPF_KPROBE(kprobe_find_vpid, int nr)
     return 0;
   }
 
-  char name[MY_TASK_COMM_LEN];
-  bpf_get_current_comm(name, sizeof(name));
-  bpf_printk("vpid lookup by %s, arg: %i", name, nr);
+  struct mem_event *e = bpf_ringbuf_reserve(&rb, sizeof(struct mem_event), 0);
+  if (!e)
+    return 0;
+
+  e->type = K_VPID_LOOKUP;
+  e->caller = bpf_get_current_pid_tgid() >> 32;
+  e->target = looked_up_pid;
+  bpf_get_current_comm(e->caller_name, sizeof(e->caller_name));
+  bpf_ringbuf_submit(e, 0);
+  
+  bpf_printk("vpid lookup by %s, arg: %i", e->caller_name, nr);
   return 0;
 }
 
@@ -170,8 +180,16 @@ int BPF_KRETPROBE(kprobe_pid_task_exit, struct task_struct *return_val)
     return 0;
   }
   
-  char name[MY_TASK_COMM_LEN];
-  bpf_get_current_comm(name, sizeof(name));
-  bpf_printk("task lookup by %s, arg: %i", name, looked_up_pid);
+  struct mem_event *e = bpf_ringbuf_reserve(&rb, sizeof(struct mem_event), 0);
+  if (!e)
+    return 0;
+
+  e->type = K_TASK_LOOKUP;
+  e->caller = bpf_get_current_pid_tgid() >> 32;
+  e->target = looked_up_pid;
+  bpf_get_current_comm(e->caller_name, sizeof(e->caller_name));
+  bpf_ringbuf_submit(e, 0);
+
+  bpf_printk("task lookup by %s, arg: %i", e->caller_name, looked_up_pid);
   return 0;
 }
