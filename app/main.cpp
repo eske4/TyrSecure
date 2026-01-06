@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   std::cout << "--- Anti-Cheat Handler Test ---" << std::endl;
 
   pid_t protected_pid = (argc > 1) ? static_cast<pid_t>(std::stoi(argv[1]))
-                                   : static_cast<pid_t>(792);
+                                   : static_cast<pid_t>(1);
 
   mem_access_agent mem_agent = mem_access_agent(protected_pid);
   kmod_tracker_agent module_agent = kmod_tracker_agent();
