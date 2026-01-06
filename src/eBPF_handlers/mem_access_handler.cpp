@@ -41,7 +41,7 @@ int mem_access_handler::LoadAndAttachAll(pid_t protected_pid) {
     std::cerr << "ERROR: Failed to load BPF programs into kernel: " << err
               << std::endl;
     skel_obj.reset();
-    return -1;
+    return err;
   }
 
   rb.reset(ring_buffer__new(bpf_map__fd(skel_obj->maps.rb),
