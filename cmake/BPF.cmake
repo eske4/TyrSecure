@@ -15,5 +15,14 @@ execute_process(
   WORKING_DIRECTORY ${BPF_OUT}
   RESULT_VARIABLE rv)
 
+if(NOT rv EQUAL 0)
+  message(
+    FATAL_ERROR
+      "Failed to generate vmlinux.h. Is bpftool installed and do you have kernel BTF support?"
+  )
+endif()
+
+message(STATUS "vmlinux.h generated successfully at ${VMLINUX_OUT}")
+
 add_library(bpf_headers INTERFACE)
 target_include_directories(bpf_headers INTERFACE ${BPF_OUT} ${SKEL_OUT_DIR})
