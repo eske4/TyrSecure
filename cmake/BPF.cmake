@@ -15,3 +15,5 @@ execute_process(
   WORKING_DIRECTORY ${BPF_OUT}
   RESULT_VARIABLE rv)
 
+add_library(bpf_headers INTERFACE)
+target_include_directories(bpf_headers INTERFACE ${BPF_OUT} ${SKEL_OUT_DIR})
