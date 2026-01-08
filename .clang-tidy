@@ -1,0 +1,9 @@
+# Disable modernize and C++ guidelines globally,
+# then re-enable them specifically if needed
+Checks: "-*,
+  clang-diagnostic-*,
+  bugprone-*,
+  readability-*,
+  -modernize-*,
+  -cppcoreguidelines-*,
+  -clang-analyzer-cplusplus*"
