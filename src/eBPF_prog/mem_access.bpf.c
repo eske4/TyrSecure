@@ -123,22 +123,25 @@ int BPF_PROG(restrict_proc_access, struct file *file) {
         bpf_strcmp(protected_pid_s, parent_name) == 0;
 
     if (is_parent_protected_pid) {
-      struct mem_event *e =
+      struct mem_event *event =
           bpf_ringbuf_reserve(&rb, sizeof(struct mem_event), 0);
-      if (!e)
+
+      if (!event) {
         return -EPERM;
+      }
 
-      e->type = PROCFS;
-      e->caller = caller_pid;
-      e->target = PROTECTED_PID;
-      bpf_core_read_str(e->filename, sizeof(file->f_path.dentry->d_name.len),
+      event->type = PROCFS;
+      event->caller = caller_pid;
+      event->target = PROTECTED_PID;
+      bpf_core_read_str(event->filename,
+                        sizeof(file->f_path.dentry->d_name.len),
                         file->f_path.dentry->d_name.name);
-      bpf_get_current_comm(e->caller_name, sizeof(e->caller_name));
+      bpf_get_current_comm(event->caller_name, sizeof(event->caller_name));
 
-      bpf_printk("open called by %s(pid %i), for /proc/%i", e->caller_name,
-                 e->caller, e->target);
+      bpf_printk("open called by %s(pid %i), for /proc/%i", event->caller_name,
+                 event->caller, event->target);
 
-      bpf_ringbuf_submit(e, 0);
+      bpf_ringbuf_submit(event, 0);
       return -EPERM;
     }
     return 0;
@@ -155,17 +158,18 @@ int BPF_KPROBE(kprobe_find_vpid, int nr) {
     return 0;
   }
 
-  struct mem_event *e = bpf_ringbuf_reserve(&rb, sizeof(struct mem_event), 0);
-  if (!e)
+  struct mem_event *event =
+      bpf_ringbuf_reserve(&rb, sizeof(struct mem_event), 0);
+  if (!event)
     return 0;
 
-  e->type = K_VPID_LOOKUP;
-  e->caller = bpf_get_current_pid_tgid() >> 32;
-  e->target = looked_up_pid;
-  bpf_get_current_comm(e->caller_name, sizeof(e->caller_name));
-  bpf_ringbuf_submit(e, 0);
+  event->type = K_VPID_LOOKUP;
+  event->caller = bpf_get_current_pid_tgid() >> 32;
+  event->target = looked_up_pid;
+  bpf_get_current_comm(event->caller_name, sizeof(event->caller_name));
+  bpf_ringbuf_submit(event, 0);
 
-  bpf_printk("vpid lookup by %s, arg: %i", e->caller_name, nr);
+  bpf_printk("vpid lookup by %s, arg: %i", event->caller_name, nr);
   return 0;
 }
 
